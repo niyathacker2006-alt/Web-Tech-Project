@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies - Mood Filter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* Define your pastel color variables */
+        :root {
+            --color-primary: #B2DFDB; /* Mint/Aqua */
+            --color-text-dark: rgb(84, 82, 83); /* Dark Slate Blue */
+            --color-background: #F9F9F9; 
+            --color-secondary: #FADADD; /* Soft Pink */
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-color:var(--color-text-dark)
+            background-color: var(--color-background);
+        }
+        .vertical-nav {
+            min-height: 100vh;
+            background-color: var(--color-text-dark); 
+            padding-top: 50px;
+            width: 250px; /* Fixed width for the nav */
+            flex-shrink: 0;
+        }
+        .nav-link-item {
+            display: block;
+            padding: 40px 60px;
+            color: #ccc;
+            font-size: 1.2rem;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            text-decoration: none;
+            border-left: 5px solid transparent;
+        }
+        .nav-link-item:hover, .nav-link-item.active {
+            background-color: rgba(178, 223, 219, 0.1);
+            color: var(--color-primary);
+            border-left: 5px solid var(--color-primary);
+        }
+        .main-content {
+            padding: 50px;
+        }
+        .card-title {
+            color: var(--color-primary);
+        }
+    </style>
+</head>
+<body style="background-image: url('images/canva\ template.jpeg'); background-size: cover; background-repeat: no-repeat; background-attachment: fixed;">
+
+    <div class="d-flex">
+        <div class="vertical-nav sticky-top">
+            <h4 class="text-white text-center mb-4 px-3">Filter: <span id="mood-filter-display" class="text-primary text-capitalize">Loading...</span></h4>
+            
+            <a href="music.html" class="nav-link-item">🎵 Music</a>
+            <a href="books.html" class="nav-link-item">📚 Books</a>
+            <a href="movies.html" class="nav-link-item active">🎬 Movies</a>
+            <a href="activities.html" class="nav-link-item">🏃 Activities</a>
+            
+            <a href="moodlist.html" class="nav-link-item mt-5 text-secondary">Change Mood</a>
+        </div>
+        
+        <div class="main-content flex-grow-1">
+            
+            <div class="alert alert-light text-center py-4 mb-5 border-0" role="alert" style="border-left: 5px solid var(--color-primary);">
+                <blockquote class="blockquote mb-0">
+                    <p id="page-quote" class="mb-1 fs-4 fst-italic text-dark"></p>
+                    <footer id="quote-author" class="blockquote-footer text-muted"></footer>
+                </blockquote>
+            </div>
+
+            <h1 class="display-4 text-dark mb-4">Books Curated for Your <span id="category-mood-display" class="text-primary text-capitalize"></span> Mood</h1>
+            
+            <div id="bulk-list-container" class="row">
+                <p id="loading-message">Loading recommendations...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // --- 4a. EMBEDDED MOOD DATA (The simplest place for it to live) ---
+        const moodData = {
+            "happy": {
+                "color": { "name": "Sunshine Yellow", "hex": "#FFD700" },
+                "music": [{ "title": "Happy Mix", "link": "#", "source": "Feel-Good Pop" }],
+                "movie": [
+                    { "title": "Little Miss Sunshine", "link": "#", "source": "Indie Comedy/Drama" },
+                    { "title": "The Princess Bride", "link": "#", "source": "Fantasy/Adventure Classic" }
+                ],
+                "book": [{ "title": "The Alchemist", "link": "#", "source": "Philosophical" }],
+                "quote": [{ "text": "Happiness is not something readymade.", "author": "Dalai Lama" }],
+                "activity": ["Go outside and spend 15 minutes soaking up the sun."]
+            },
+            "chill": {
+                "color": { "name": "Sky Blue", "hex": "#87CEEB" },
+                "movie": [{ "title": "Lost in Translation", "link": "#", "source": "Melancholy Drama" }],
+                "book": [{ "title": "Walden", "link": "#", "source": "Nature" }],
+                "music": [{ "title": "Lo-Fi Beats", "link": "#", "source": "Ambient" }],
+                "quote": [{ "text": "Nature does not hurry.", "author": "Lao Tzu" }],
+                "activity": ["Make a cup of herbal tea."]
+            },
+            "tired": {
+    "color": { "name": "Deep Slate Blue", "hex": "#78909C" },
+    "music": [
+        { "title": "Deep Ambient Drone", "link": "#", "source": "Sound Bath Music" },
+        { "title": "Quiet Storm R&B Playlist", "link": "#", "source": "Soothing Vocals" },
+        { "title": "Melodic Piano Solo (No Lyrics)", "link": "#", "source": "Classical Calm" }
+    ],
+    "movie": [
+        { "title": "My Neighbor Totoro", "link": "#", "source": "Ghibli Comfort Animation" },
+        { "title": "A slow-paced travel documentary", "link": "#", "source": "Visual Escape" },
+        { "title": "Chef's Table (minimal conflict)", "link": "#", "source": "Relaxing Documentary" }
+    ],
+    "book": [
+        { "title": "A favorite novel you've read before (easy reread)", "link": "#", "source": "Comfort Fiction" },
+        { "title": "Tiny Beautiful Things by Cheryl Strayed", "link": "#", "source": "Gentle Essays" },
+        { "title": "A children's book or illustrated book", "link": "#", "source": "Light & Simple" }
+    ],
+    "quote": [
+        { "text": "Rest is not idleness, and to lie sometimes on the grass under trees... is not a waste of time.", "author": "John Lubbock" },
+        { "text": "Take rest; a field that has rested gives a bountiful harvest.", "author": "Ovid" }
+    ],
+    "activity": [
+        "Take a 15-minute power nap or just close your eyes and listen to music.",
+        "Practice a gentle forward fold or child's pose stretch.",
+        "Make a cozy corner and look out a window."
+    ]
+},
+
+"bored": {
+    "color": { "name": "Muted Lavender", "hex": "#cfc4e9" },
+    "music": [
+        { "title": "A True Crime or Narrative Podcast", "link": "#", "source": "Engaging Audio Story" },
+        { "title": "Eclectic 90s Alternative Rock Album", "link": "#", "source": "Nostalgic Jolt" },
+        { "title": "Songs with fast, clever lyrics (e.g., Hamilton soundtrack)", "link": "#", "source": "Mental Engagement" }
+    ],
+    "movie": [
+        { "title": "Ocean's Eleven", "link": "#", "source": "Fast-Paced Heist" },
+        { "title": "Scott Pilgrim vs. the World", "link": "#", "source": "Visually Stimulating Comedy" },
+        { "title": "Any binge-worthy, low-stakes sitcom", "link": "#", "source": "Easy Distraction" }
+    ],
+    "book": [
+        { "title": "A collection of short stories or essays (easy to start/stop)", "link": "#", "source": "Variety Reading" },
+        { "title": "A humorous graphic novel or comic collection", "link": "#", "source": "Visual Fun" },
+        { "title": "The Hitchhiker's Guide to the Galaxy", "link": "#", "source": "Absurdist Comedy" }
+    ],
+    "quote": [
+        { "text": "The cure for boredom is curiosity. There is no cure for curiosity.", "author": "Dorothy Parker" },
+        { "text": "Man is a creature who can get used to anything, and that, I think, is the best definition of him.", "author": "Fyodor Dostoevsky" }
+    ],
+    "activity": [
+        "Start a 5-minute doodle challenge or a simple creative task.",
+        "Browse a completely random section of Wikipedia.",
+        "Try learning the first 30 seconds of a new dance or song."
+    ]
+},
+
+// --- Productive Mood ---
+
+"focused": {
+    "color": { "name": "Soft Teal", "hex": "#80CBC4" },
+    "music": [
+        { "title": "Brain.fm: Focus Music", "link": "#", "source": "Functional Tones" },
+        { "title": "Baroque Instrumental Music (e.g., Bach)", "link": "#", "source": "Cognitive Aid" },
+        { "title": "Minimalist Ambient Loops", "link": "#", "source": "Non-Distracting" }
+    ],
+    "movie": [
+        { "title": "The Social Network", "link": "#", "source": "Business/Motivation Drama" },
+        { "title": "A TED Talk playlist on productivity or habit-building", "link": "#", "source": "Informational" },
+        { "title": "Minimalist Documentary (e.g., Jiro Dreams of Sushi)", "link": "#", "source": "Process-Oriented" }
+    ],
+    "book": [
+        { "title": "Atomic Habits by James Clear", "link": "#", "source": "Self-Improvement" },
+        { "title": "Deep Work by Cal Newport", "link": "#", "source": "Productivity Strategy" },
+        { "title": "A detailed textbook or technical manual related to your work", "link": "#", "source": "Skill-Building" }
+    ],
+    "quote": [
+        { "text": "Where your attention goes, your energy flows.", "author": "James Redfield" },
+        { "text": "The price of greatness is responsibility.", "author": "Winston Churchill" }
+    ],
+    "activity": [
+        "Use the Pomodoro Technique (25 min work, 5 min break) for a task.",
+        "Clear one square foot of your workspace.",
+        "Write down your single most important task for the day."
+    ]
+},
+            // Add these blocks inside the existing const moodData = { ... } object:
+
+
+            "fallback": {
+                "color": { "name": "Gentle Grey", "hex": "#cfd8dc" },
+                "movie": [{ "title": "A Nature Documentary", "link": "#", "source": "Relax" }],
+                "music": [{ "title": "Ambient Instrumental Mix", "link": "#", "source": "Focus" }],
+                "book": [{ "title": "An Essay Collection", "link": "#", "source": "Classic" }],
+                "quote": [{ "text": "A journey of a thousand miles begins with a single step.", "author": "Laozi" }],
+                "activity": ["Take five slow, deep breaths"]
+            }
+        };
+
+        // --- 4b. MAIN EXECUTION LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Get the mood from the URL parameter (The reliable method!)
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedMood = urlParams.get('mood') || 'fallback'; 
+            const moodKey = selectedMood.toLowerCase();
+            
+            // 2. Determine the category from the filename
+            const path = window.location.pathname;
+            let category = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+            
+            // 3. Normalize category name to match data keys (e.g., movies -> movie)
+            if (category === 'movies') {
+                category = 'movie'; 
+            } else if (category === 'books') {
+                category = 'book'; 
+            } else if (category === 'activities') {
+                category = 'activity'; 
+            }
+            
+            // 4. Retrieve Data
+            const data = moodData[moodKey] || moodData['fallback']; 
+            const items = data[category] || data.fallback[category] || []; 
+            
+            // 5. Update Headers & Links
+            document.getElementById('mood-filter-display').textContent = selectedMood;
+            document.getElementById('category-mood-display').textContent = selectedMood;
+
+            // 6. Update vertical nav links to maintain the mood parameter
+            document.querySelectorAll('.vertical-nav a').forEach(link => {
+                if (link.href.includes('.html')) {
+                    const baseHref = link.getAttribute('href').split('?')[0];
+                    link.href = baseHref + '?mood=' + selectedMood;
+                }
+            });
+
+            // 7. Display Unique Quote
+            const quoteItems = data.quote || data.fallback.quote || [{ text: "Keep going. Your future self will thank you.", author: "Unknown" }];
+            const randomQuote = quoteItems[Math.floor(Math.random() * quoteItems.length)];
+            document.getElementById('page-quote').textContent = `"${randomQuote.text}"`;
+            document.getElementById('quote-author').textContent = randomQuote.author;
+
+            // 8. Generate Bulk List
+            const container = document.getElementById('bulk-list-container');
+            container.innerHTML = ''; // Clear loading message
+
+            if (items.length === 0) {
+                container.innerHTML = `<p class="lead text-muted mt-5">No specific ${category} recommendations available for the ${selectedMood} mood yet. Check back soon!</p>`;
+                return;
+            }
+
+            let listContent = '';
+            
+            items.forEach(item => {
+                let title = '';
+                let details = '';
+                let link = '#';
+
+                if (category === 'activity') {
+                    title = item; // Activity items are just strings
+                    details = `<span class="badge bg-secondary">Self-Care</span>`;
+                } else { // Movies, Books, Music
+                    title = item.title;
+                    details = `<span class="badge bg-info text-dark me-2">${item.source}</span>`;
+                    link = item.link;
+                }
+                
+                listContent += `
+                    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm border-0 p-3" style="border-bottom: 3px solid var(--color-primary);">
+                            <div class="card-body">
+                                <h6 class="card-title fw-bold text-dark">${title}</h6>
+                                ${details}
+                                ${link !== '#' ? `<a href="${link}" target="_blank" class="text-primary d-block mt-2 fw-medium">Explore Link</a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = `<div class="row">${listContent}</div>`;
+        });
+    </script>
+</body>
+</html>

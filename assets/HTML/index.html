@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Curator - Personal Journal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <style>
+        /* Shared Sophisticated Pastel Aesthetic Variables */
+        :root {
+            --color-primary: #B2DFDB; /* Mint/Aqua */
+            --color-text-dark: #37474F; /* Dark Slate Blue */
+            --color-background: #F9F9F9; /* Near-white base */
+            --color-secondary: #FADADD; /* Soft Pink */
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--color-background); /* Using the Tailwind bg-gray-50 color */
+        }
+
+        /* Custom style for the nav bar to use pastel variable */
+        .navbar-custom {
+            background-color: var(--color-background) !important;
+        }
+
+        /* Ensuring the textarea doesn't clash with the toolbar style */
+        #journal-entry {
+            background-color: lavenderblush  !important;
+            border-top-left-radius: 0 !important;
+            border-top-right-radius: 0 !important;
+            resize: vertical; /* Allow resizing */
+        }
+
+        /* Styling for the Rich Text Content in History Cards */
+        .card-text b { font-weight: 700; color: var(--color-text-dark); }
+        .card-text i { font-style: italic; color: #555; }
+        .card-text u { text-decoration: underline; }
+        
+    </style>
+</head>
+<body class="bg-gray-50" style="background-image: url('images/Painting\ of\ lavender\ border\ backgrounds\ landscape….jpeg'); background-size: cover; background-repeat: no-repeat; background-attachment: fixed;">
+
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+        <div class="container-fluid container">
+            <a class="navbar-brand fw-bold text-dark" href="#">My Mood Journal</a>
+            <span class="navbar-text">
+                <a href="moodlist.html" class="text-secondary me-3">Change Mood</a>
+                <a href="login.html" class="text-primary fw-bold">Logout</a> 
+            </span>
+        </div>
+    </nav>
+    
+    <div class="container py-5">
+        <header class="text-center mb-5">
+            <h1 class="display-5 text-dark">Journal Your Day 📝</h1>
+            <p class="lead text-muted">Describe your feelings just like I am your loved one:</p>
+        </header>
+
+        <section id="journal-section" class="mt-12 pt-10 border-t border-gray-200">
+            <h2 class="text-center text-xl font-semibold text-gray-700 mb-6">Your Personal Mood Journal</h2>
+            
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-10 mx-auto max-w-4xl"> 
+                <h4 class="text-lg font-medium text-indigo-600 mb-4">Say your Heart out my dear it will make you feel lighter!</h4>
+                
+                <div class="mb-4">
+                    <label for="journal-mood-select" class="form-label font-medium text-gray-700">Selected Mood:</label>
+                    <select id="journal-mood-select" class="form-select border-gray-300 rounded-md shadow-sm w-full">
+                        <option value="happy">Introspective</option>
+                        <option value="chill">Listless</option>
+                        <option value="focused">Tranquil</option>
+                        </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="journal-entry" class="form-label font-medium text-gray-700">What's on your mind?</label>
+
+                    <div id="formatting-toolbar" class="flex p-2 bg-gray-100 rounded-t-lg border-b border-gray-300">
+                        <button type="button" data-command="bold" class="text-gray-700 font-bold hover:bg-gray-200 px-3 py-1 rounded-md transition duration-150">B</button>
+                        <button type="button" data-command="italic" class="text-gray-700 italic hover:bg-gray-200 px-3 py-1 rounded-md transition duration-150">I</button>
+                        <button type="button" data-command="underline" class="text-gray-700 underline hover:bg-gray-200 px-3 py-1 rounded-md transition duration-150">U</button>
+                    </div>
+
+                    <textarea id="journal-entry" 
+                              class="form-control border-gray-300 rounded-b-lg shadow-sm w-full p-3 focus:ring-indigo-500 focus:border-indigo-500" 
+                              rows="8" 
+                              placeholder="Write about your day, your thoughts, or why you chose this mood..."></textarea>
+                </div>
+                
+                <button id="save-journal-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg w-full transition duration-150 ease-in-out">
+                    Save Entry
+                </button>
+            </div>
+
+            <h4 class="text-lg font-medium text-gray-600 mb-4 ml-2">Recent Entries:</h4>
+            <div id="journal-history" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                <p id="no-entries-message" class="text-muted text-center col-span-full">No entries yet. Start journaling!</p>
+            </div>
+        </section>
+        
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Data Structure (Placeholder - full data is complex, using colors for display)
+        const moodDataColors = {
+            happy: '#FFD700',
+            bored: '#87CEEB',
+            focused: '#80CBC4',
+            fallback: '#cfd8dc'
+        };
+
+        // 1. Get DOM elements
+        const saveButton = document.getElementById('save-journal-btn');
+        const moodSelect = document.getElementById('journal-mood-select');
+        const entryTextarea = document.getElementById('journal-entry');
+        const historyDisplay = document.getElementById('journal-history');
+        const noEntriesMessage = document.getElementById('no-entries-message');
+        const toolbar = document.getElementById('formatting-toolbar');
+
+
+        // --- Formatting Logic ---
+        function applyFormatting(command) {
+            const start = entryTextarea.selectionStart;
+            const end = entryTextarea.selectionEnd;
+            const selectedText = entryTextarea.value.substring(start, end);
+
+            let prefix = '';
+            let suffix = '';
+
+            if (command === 'bold') { prefix = '<b>'; suffix = '</b>'; } 
+            else if (command === 'italic') { prefix = '<i>'; suffix = '</i>'; } 
+            else if (command === 'underline') { prefix = '<u>'; suffix = '</u>'; }
+
+            if (selectedText) {
+                const formattedText = prefix + selectedText + suffix;
+                entryTextarea.value = entryTextarea.value.substring(0, start) + formattedText + entryTextarea.value.substring(end);
+                
+                // Restore cursor position
+                entryTextarea.selectionStart = start + prefix.length;
+                entryTextarea.selectionEnd = end + prefix.length;
+            }
+            entryTextarea.focus(); // Keep focus on the textarea
+        }
+
+
+        // --- Journal Loading and Display Logic ---
+        function loadJournalEntries() {
+            const entries = JSON.parse(localStorage.getItem('moodJournal')) || [];
+            displayJournalEntries(entries);
+            return entries;
+        }
+
+        function displayJournalEntries(entries) {
+            historyDisplay.innerHTML = ''; 
+
+            if (entries.length === 0) {
+                noEntriesMessage.classList.remove('hidden'); // Use Tailwind's 'hidden' utility
+                historyDisplay.appendChild(noEntriesMessage);
+                return;
+            }
+            noEntriesMessage.classList.add('hidden'); 
+
+            entries.slice().reverse().forEach((entry) => {
+                const moodColor = moodDataColors[entry.mood] || moodDataColors.fallback;
+
+                const entryCard = document.createElement('div');
+                entryCard.className = 'col-span-1';
+                entryCard.innerHTML = `
+                    <div class="bg-white p-5 shadow-md rounded-xl h-full transition duration-300 hover:shadow-xl" 
+                         style="border-left: 4px solid ${moodColor};">
+                        
+                        <h5 class="text-base font-semibold text-capitalize" style="color: ${moodColor};">
+                            ${entry.mood} Vibe
+                        </h5>
+                        <h6 class="text-xs text-gray-500 mb-3">${entry.date}</h6>
+                        
+                        <div class="card-text text-gray-700 text-sm overflow-hidden" style="max-height: 100px;">
+                            ${entry.entry} 
+                        </div>
+                        <button class="text-indigo-500 text-sm mt-3 hover:text-indigo-700">Read More</button>
+                    </div>
+                `;
+                historyDisplay.appendChild(entryCard);
+            });
+        }
+
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Load existing entries
+            loadJournalEntries();
+
+            // 2. Attach formatting logic to toolbar buttons
+            toolbar.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON') {
+                    const command = e.target.getAttribute('data-command');
+                    if (command) {
+                        applyFormatting(command);
+                    }
+                }
+            });
+
+            // 3. Save Button Listener
+            saveButton.addEventListener('click', () => {
+                const mood = moodSelect.value;
+                const entryHTML = entryTextarea.value.trim(); // Get the raw value with tags
+                
+                // Basic check for empty entry
+                if (!entryHTML) {
+                    alert('Please write something before saving!');
+                    return;
+                }
+
+                const today = new Date();
+                const formattedDate = today.toLocaleDateString('en-US', { 
+                    year: 'numeric', month: 'long', day: 'numeric' 
+                });
+
+                const newEntry = {
+                    mood: mood,
+                    entry: entryHTML,
+                    date: formattedDate,
+                    timestamp: today.getTime()
+                };
+
+                // Get old entries, add the new one, and save back
+                const entries = loadJournalEntries(); 
+                entries.push(newEntry);
+                localStorage.setItem('moodJournal', JSON.stringify(entries));
+
+                entryTextarea.value = ''; // Clear the input
+                displayJournalEntries(entries); 
+                alert('Mood and journal entry saved successfully!');
+            });
+        });
+        const entryCard = document.createElement('div');
+                entryCard.className = 'col-span-1';
+                entryCard.innerHTML = `
+                    <div class="bg-white p-5 shadow-md rounded-xl h-full transition duration-300 hover:shadow-xl" 
+                         style="border-left: 4px solid ${moodColor};">
+                        
+                        <h5 class="text-base font-semibold text-capitalize" style="color: ${moodColor};">
+                            ${entry.mood} Vibe
+                        </h5>
+                        <h6 class="text-xs text-gray-500 mb-3">${entry.date}</h6>
+                        
+                        <div class="card-text text-gray-700 text-sm overflow-hidden" style="max-height: 100px;">
+                            ${entry.entry} 
+                        </div>
+                        
+                        <div class="mt-4 flex justify-end space-x-2">
+                            <button data-action="edit" data-timestamp="${entry.timestamp}" 
+                                    class="text-xs text-indigo-500 hover:text-indigo-700 font-medium transition duration-150">
+                                Edit
+                            </button>
+                            <button data-action="delete" data-timestamp="${entry.timestamp}" 
+                                    class="text-xs text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+                historyDisplay.appendChild(entryCard);
+// ...
+    </script>
+</body>
+</html>

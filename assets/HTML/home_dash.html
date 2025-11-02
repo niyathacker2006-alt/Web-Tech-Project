@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Your Mood Filter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styleproj.css"> 
+    <style>
+        .vertical-nav {
+            min-height: 100vh;
+            background-color: rgb(84, 82, 83); /* Dark background for Netflix feel */
+            padding-top: 50px;
+        }
+        .nav-link-item {
+            display: block;
+            padding: 20px 30px;
+            color: #ccc;
+            font-size: 1.5rem;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            text-decoration: none;
+            border-left: 5px solid transparent;
+        }
+        .nav-link-item:hover, .nav-link-item.active {
+            background-color: rgba(178, 223, 219, 0.1); /* Subtle pastel hover */
+            color: var(--color-primary);
+            border-left: 5px solid var(--color-primary);
+        }
+        .main-content {
+            padding: 50px;
+        }
+    </style>
+</head>
+<body style="background-image: url('images/Purple\ wallpaper.jpeg'); background-size: cover; background-repeat: no-repeat; background-attachment: fixed;">
+
+    <div class="d-flex">
+        <div class="vertical-nav sticky-top">
+            <h4 class="text-white text-center mb-4 px-3">Filter: <span id="mood-filter-display" class="text-primary text-capitalize"></span></h4>
+            
+            <a href="music.html" class="nav-link-item">🎵 Music</a>
+            <a href="books.html" class="nav-link-item">📚 Books</a>
+            <a href="movies.html" class="nav-link-item">📚 Movies</a>
+            <a href="activities.html" class="nav-link-item">🏃 Activities</a>
+            
+            <a href="mood-list.html" class="nav-link-item mt-5 text-secondary">Change Mood</a>
+            <a href="index.html" class="nav-link-item text-secondary">My Journal</a>
+        </div>
+        
+        <div class="main-content flex-grow-1">
+            <h1 class="display-3 text-dark mb-4">Your Curated Selections</h1>
+            <p class="lead text-muted">Navigate the sections using the vertical menu on the left. The current mood is filtering all results!</p>
+            
+            <div class="card p-5 mt-5">
+                <h2 class="text-primary">Welcome to the Filtered View</h2>
+                <p>Select a category from the left navigation to see the bulk list of recommendations tailored to your current **<span id="instruction-mood" class="text-primary text-capitalize"></span>** mood.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    // Read the mood directly from the URL (URL parameter)
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedMood = urlParams.get('mood') || 'fallback'; // Get mood, default to fallback
+    
+    // Update dashboard headers
+    document.getElementById('mood-filter-display').textContent = selectedMood;
+    document.getElementById('instruction-mood').textContent = selectedMood;
+
+    // 🌟 CRITICAL: Update ALL vertical links to include the mood parameter
+    document.querySelectorAll('.vertical-nav a').forEach(link => {
+        // Prevent changing 'Change Mood' or 'My Journal' links
+        if (link.href.includes('.html') && !link.href.includes('moodlist') && !link.href.includes('app')) {
+            const baseHref = link.getAttribute('href').split('?')[0]; // Get the page name (e.g., movies.html)
+            link.href = baseHref + '?mood=' + selectedMood; // Append the mood
+        }
+    });
+});
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
